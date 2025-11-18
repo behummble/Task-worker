@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+	"io"
 
 	"github.com/behummble/Task-worker/internal/config"
 )
@@ -20,31 +21,54 @@ type Storage interface {
 }
 
 func NewServer(config config.ServerConfig, log *slog.Logger, storage Storage) *Server {
-	mux := newMux()
+	server :=  &Server{
+		log: log,
+		storage: storage,
+	}
 	
 	srv := &http.Server{
-		Handler: mux,
 		Addr: fmt.Sprintf("%s:%d", config.Host, config.Port),
 		ReadTimeout: time.Duration(config.ReadTimeout) * time.Second,
 	}
 
-	return &Server{
-		server: srv,
-		log: log,
-		storage: storage,
-	}
+	mux := newMux(server)
+	srv.Handler = mux
+
+	server.server = srv
+
+	return server
 }
 
 func(s *Server) Start() {
 	s.server.ListenAndServe()
 }
 
-func newMux() *http.ServeMux {
+func newMux(s *Server) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/task", taskHandler)
+	mux.HandleFunc("/api/task", s.taskHandler)
 	return mux
 }
 
-func taskHandler(writer http.ResponseWriter, request *http.Request) {
-	
+func(s *Server) taskHandler(writer http.ResponseWriter, request *http.Request) {
+	// TODO:
+	//s.ssoClient.Verify(request)
+	body, err := request.GetBody()
+	defer body.Close()
+	if err != nil {
+		s.log.Error("Can't execute body from request, client: %s, jobType: %s") //add params
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	data, err := io.ReadAll(body)
+	if err != nil {
+		s.log.Error("Can't execute bytes from request, client: %s, jobType: %s") //add params
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = s.storage.WriteTask(data)
+	if err != nil {
+		writer.WriteHeader(http.StatusCreated)
+	} else {
+		writer.WriteHeader(http.StatusInternalServerError)
+	}
 }

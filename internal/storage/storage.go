@@ -34,5 +34,6 @@ func NewStorage(cfg config.RedisConfig, log *slog.Logger) *Storage {
 }
 
 func (s *Storage) WriteTask([]byte) error {
+	
 	return nil
 }

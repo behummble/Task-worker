@@ -31,8 +31,8 @@ type WorkerConfig struct {
 }
 
 type JobsConfig struct {
-	JobsType []int
-	JobsParameters []JobConfig
+	JobsType []string
+	JobsParameters map[string]JobConfig
 }
 
 type JobConfig struct {
@@ -48,9 +48,9 @@ type RedisConfig struct {
 	Username string
 	Password string
 	ReadTimeout int
+	WriteTimeout int
 	DialTimeout int
 	Retries int
-	WriteTimeout int
 }
 
 type KafkaConfig struct {

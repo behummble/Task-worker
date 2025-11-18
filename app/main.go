@@ -11,7 +11,7 @@ import (
 
 func main() {
 	cfg := config.NewConfig("")
-	logger := newLogger(cfg)
+	logger := newLogger(cfg.Log)
 	storage := storage.NewStorage(cfg.Redis, logger)
 	server := http.NewServer(cfg.Server, logger, storage)
 	server.Start()
@@ -21,11 +21,11 @@ func main() {
 	//worker.Start()
 }
 
-func newLogger(cfg config.Config) *slog.Logger {
+func newLogger(cfg config.LogConfig) *slog.Logger {
 	return slog.New(
 		slog.NewJSONHandler(
 			os.Stdout,
-			&slog.HandlerOptions{Level: slog.LevelDebug},
+			&slog.HandlerOptions{Level: slog.Level(cfg.LogLevel)},
 		),
 	)
 }

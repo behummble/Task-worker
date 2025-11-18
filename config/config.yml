@@ -1,0 +1,27 @@
+Log:
+  - OutputPath: ""
+  - LogLevel: -4
+Server:
+  - Host: "localhost"
+  - Port: 6787
+  - ReadTimeout: 10
+Worker:
+  - NumeberOfWorkers: 5
+Jobs:
+  - JobsType: ["Email"]
+  - JobsParameters: [
+      Email: {
+        Timeout: 10,
+        Retry: 3,
+        Priority: 1
+      }
+    ]
+Redis:
+  - Host: "localhost"
+  - Port: 9898
+  - Username: ""
+  - Password: ""
+  - ReadTimeout: 5
+  - WriteTimeout: 5
+  - DialTimeout: 10
+  - Retries: 5
